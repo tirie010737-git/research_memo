@@ -1,7 +1,13 @@
 ---
 title: "about"
-output: html_document
+output: 
+  html_document:
+    toc: FALSE
 date: "2022-08-05"
 ---
 
-研究用のメモ置き場
+研究用メモ置き場
+
+Rが中心
+
+---

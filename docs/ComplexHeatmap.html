@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2022-08-08" />
+
+<title>ComplexHeatmap</title>
+
+<script src="site_libs/header-attrs-2.14.3/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script>
+<script src="site_libs/bs3compat-0.4.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.4.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.4.0/bs3compat.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">tirie's research memo</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">about</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    visualization
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ComplexHeatmap.html">ComplexHeatmap</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="links.html">links</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">ComplexHeatmap</h1>
+<h4 class="date">2022-08-08</h4>
+
+</div>
+
+
+<p>ComplexHeatmapを使ってヒートマップをかく練習。</p>
+<ul>
+<li><a
+href="https://jokergoo.github.io/ComplexHeatmap-reference/book/index.html">ComplexHeatmap</a></li>
+</ul>
+<p>興味ある人はこっちをみた方がいい。</p>
+<p>使用したデータ</p>
+<ul>
+<li><a
+href="https://github.com/fanzeyi/pokemon.json">fanzeyi/pokemon.json</a></li>
+</ul>
+<p>の”pokedex.json”を使用</p>
+<p>注)あくまでもplotの練習、メモがわりです。</p>
+<div id="install" class="section level1">
+<h1>install</h1>
+<pre class="r"><code>devtools::install_github(&quot;jokergoo/ComplexHeatmap&quot;)</code></pre>
+</div>
+<div id="library" class="section level1">
+<h1>library</h1>
+<pre class="r"><code>library(ComplexHeatmap)
+library(dplyr)
+library(tidyr)
+library(circlize)
+library(viridis)
+library(RColorBrewer)
+library(jsonlite)</code></pre>
+</div>
+<div id="データをみてみる" class="section level1">
+<h1>データをみてみる</h1>
+<pre class="r"><code># jsonliteのfromJSON関数で読み込み
+dat &lt;- fromJSON(&quot;pokemon.json-master/pokedex.json&quot;)</code></pre>
+<pre class="r"><code>## tidyrでデータフレーム化
+dat &lt;- dat %&gt;% 
+  unnest_wider(name) %&gt;%
+  unnest_wider(type) %&gt;%
+  unnest_wider(base) 
+
+head(dat)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="2%" />
+<col width="10%" />
+<col width="10%" />
+<col width="8%" />
+<col width="10%" />
+<col width="5%" />
+<col width="6%" />
+<col width="2%" />
+<col width="6%" />
+<col width="7%" />
+<col width="10%" />
+<col width="11%" />
+<col width="5%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">id</th>
+<th align="left">english</th>
+<th align="left">japanese</th>
+<th align="left">chinese</th>
+<th align="left">french</th>
+<th align="left">…1</th>
+<th align="left">…2</th>
+<th align="right">HP</th>
+<th align="right">Attack</th>
+<th align="right">Defense</th>
+<th align="right">Sp. Attack</th>
+<th align="right">Sp. Defense</th>
+<th align="right">Speed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Bulbasaur</td>
+<td align="left">フシギダネ</td>
+<td align="left">妙蛙种子</td>
+<td align="left">Bulbizarre</td>
+<td align="left">Grass</td>
+<td align="left">Poison</td>
+<td align="right">45</td>
+<td align="right">49</td>
+<td align="right">49</td>
+<td align="right">65</td>
+<td align="right">65</td>
+<td align="right">45</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Ivysaur</td>
+<td align="left">フシギソウ</td>
+<td align="left">妙蛙草</td>
+<td align="left">Herbizarre</td>
+<td align="left">Grass</td>
+<td align="left">Poison</td>
+<td align="right">60</td>
+<td align="right">62</td>
+<td align="right">63</td>
+<td align="right">80</td>
+<td align="right">80</td>
+<td align="right">60</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Venusaur</td>
+<td align="left">フシギバナ</td>
+<td align="left">妙蛙花</td>
+<td align="left">Florizarre</td>
+<td align="left">Grass</td>
+<td align="left">Poison</td>
+<td align="right">80</td>
+<td align="right">82</td>
+<td align="right">83</td>
+<td align="right">100</td>
+<td align="right">100</td>
+<td align="right">80</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Charmander</td>
+<td align="left">ヒトカゲ</td>
+<td align="left">小火龙</td>
+<td align="left">Salamèche</td>
+<td align="left">Fire</td>
+<td align="left">NA</td>
+<td align="right">39</td>
+<td align="right">52</td>
+<td align="right">43</td>
+<td align="right">60</td>
+<td align="right">50</td>
+<td align="right">65</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Charmeleon</td>
+<td align="left">リザード</td>
+<td align="left">火恐龙</td>
+<td align="left">Reptincel</td>
+<td align="left">Fire</td>
+<td align="left">NA</td>
+<td align="right">58</td>
+<td align="right">64</td>
+<td align="right">58</td>
+<td align="right">80</td>
+<td align="right">65</td>
+<td align="right">80</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="left">Charizard</td>
+<td align="left">リザードン</td>
+<td align="left">喷火龙</td>
+<td align="left">Dracaufeu</td>
+<td align="left">Fire</td>
+<td align="left">Flying</td>
+<td align="right">78</td>
+<td align="right">84</td>
+<td align="right">78</td>
+<td align="right">109</td>
+<td align="right">85</td>
+<td align="right">100</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>hp, attack, defence, spAttack, spDefence, speedをheatmapで表示</p>
+<pre class="r"><code>input &lt;- dat[,-c(1:7)]
+
+# Z-scoreに変換
+
+input &lt;- apply(input,2,scale)
+rownames(input) &lt;- dat$english</code></pre>
+</div>
+<div id="とりあえずプロット" class="section level1">
+<h1>とりあえずプロット</h1>
+<pre class="r"><code>Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        name=&quot;Z-score&quot;
+        )</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-7-1.png" width="480" /></p>
+</div>
+<div id="色を変える" class="section level1">
+<h1>色を変える</h1>
+<pre class="r"><code># circlize packageを使用
+# とりあえずviridisのturboを使用
+
+Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),　##ここでcol指定
+        name=&quot;Z-score&quot;)</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
+</div>
+<div id="top-annotationをつける" class="section level1">
+<h1>top annotationをつける</h1>
+<pre class="r"><code>cols &lt;- brewer.pal(6, &quot;Set1&quot;)
+
+# top annotationmのcode
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c(&quot;HP&quot; = cols[1], &quot;Attack&quot; = cols[2], &quot;Defense&quot; = cols[3],
+                                               &quot;Sp. Attack&quot; = cols[4],&quot;Sp. Defense&quot; = cols[5], &quot;Speed&quot; = cols[6])))
+Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name=&quot;Z-score&quot;,
+        top_annotation = ha)</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
+</div>
+<div id="k-means-clustering" class="section level1">
+<h1>k-means clustering</h1>
+<pre class="r"><code>cols &lt;- brewer.pal(6, &quot;Set1&quot;)
+
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c(&quot;HP&quot; = cols[1], &quot;Attack&quot; = cols[2], &quot;Defense&quot; = cols[3],
+                                               &quot;Sp. Attack&quot; = cols[4],&quot;Sp. Defense&quot; = cols[5], &quot;Speed&quot; = cols[6])))
+set.seed(1) ## 乱数指定 ※指定しないと毎回結果が変わる
+Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name=&quot;Z-score&quot;,
+        row_km = 10, ##ここでクラスターの数を指定
+        top_annotation = ha)</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>もうちょっと細かく分類できそう</p>
+</div>
+<div id="left-annotationを付加" class="section level1">
+<h1>left annotationを付加</h1>
+<pre class="r"><code>cols &lt;- brewer.pal(6, &quot;Set1&quot;)
+
+## top annotation
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c(&quot;HP&quot; = cols[1], &quot;Attack&quot; = cols[2], &quot;Defense&quot; = cols[3],
+                                               &quot;Sp. Attack&quot; = cols[4],&quot;Sp. Defense&quot; = cols[5], &quot;Speed&quot; = cols[6])))
+## left annotation
+la = rowAnnotation(group = anno_block(gp = gpar(fill = 2:11),
+        labels = c(&quot;Hard&quot;, &quot;Attack&quot;, &quot;Speed&quot;,&quot;Strong&quot;,&quot;mid2&quot;,&quot;mid1&quot;,&quot;Weak3&quot;,&quot;Weak2&quot;,&quot;Weak1&quot;,&quot;HP&quot;), 
+        labels_gp = gpar(col = &quot;white&quot;, fontsize = 10)))
+
+set.seed(1)
+Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name=&quot;Z-score&quot;,
+        row_km = 10,
+        top_annotation = ha,
+        left_annotation =la)</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="特定の名前だけを表示" class="section level1">
+<h1>特定の名前だけを表示</h1>
+<p>特定の遺伝子の名前だけを出す時に使える</p>
+<pre class="r"><code>#　名前のリスト
+name_lists &lt;- c(&quot;Bulbasaur&quot;,&quot;Ivysaur&quot;,&quot;Venusaur&quot;,
+                &quot;Charmander&quot;,&quot;Charmeleon&quot;,&quot;Charizard&quot;,
+                &quot;Squirtle&quot;,&quot;Wartortle&quot;,&quot;Blastoise&quot;,
+                &quot;Pikachu&quot;,&quot;Raichu&quot;,
+                &quot;Eevee&quot;,&quot;Vaporeon&quot;,&quot;Jolteon&quot;,&quot;Flareon&quot;,
+                &quot;Articuno&quot;,&quot;Zapdos&quot;,&quot;Moltres&quot;,
+                &quot;Mewtwo&quot;,&quot;Mew&quot;)
+
+# indexの取得
+index &lt;- match(name_lists,rownames(input))
+
+# row annotationのコード
+ra = rowAnnotation(species = anno_mark(at = index, 
+    labels = name_lists))
+
+# 以下同じ
+cols &lt;- brewer.pal(6, &quot;Set1&quot;)
+
+## top annotation
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c(&quot;HP&quot; = cols[1], &quot;Attack&quot; = cols[2], &quot;Defense&quot; = cols[3],
+                                               &quot;Sp. Attack&quot; = cols[4],&quot;Sp. Defense&quot; = cols[5], &quot;Speed&quot; = cols[6])))
+## left annotation
+la = rowAnnotation(group = anno_block(gp = gpar(fill = 2:11),
+        labels = c(&quot;Hard&quot;, &quot;Attack&quot;, &quot;Speed&quot;,&quot;Strong&quot;,&quot;mid2_specific&quot;,&quot;mid1&quot;,&quot;Weak3&quot;,&quot;Weak2&quot;,&quot;Weak1&quot;,&quot;HP&quot;), 
+        labels_gp = gpar(col = &quot;white&quot;, fontsize = 10)))
+
+set.seed(1)
+Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name=&quot;Z-score&quot;,
+        row_km = 10,
+        top_annotation = ha,
+        left_annotation =la,
+        right_annotation = ra,
+        show_row_names = FALSE,
+        row_names_gp = gpar(fontsize = 4)
+        )</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="text-box-annotationをつけてみる" class="section level1">
+<h1>text box annotationをつけてみる</h1>
+<pre class="r"><code>set.seed(1) ## 乱数指定 ※指定しないと毎回結果が変わる
+ht1 &lt;- Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name=&quot;Z-score&quot;,
+        row_km = 10,
+        top_annotation = ha,
+        left_annotation =la,
+        right_annotation = ra,
+        show_row_names = FALSE,
+        row_names_gp = gpar(fontsize = 4)
+        )
+
+# order情報の取得
+o1 = row_order(ht1)
+head(o1)</code></pre>
+<pre><code>## $`5`
+##  [1] 805 377 208 378 719 379 476 681 703 411 748 480 197 437 598 477 356 560 752
+## [20] 776 563 771 790 299  95 213
+## 
+## $`6`
+##   [1] 809 794 464 112 376 787 405 342 781 754 348 621 768 526 589 465 110 367
+##  [19] 565 558 324 697 232  76 652 711 689 450 369  91 306 713 227 105 205 305
+##  [37] 680  28 372 185 525  75 612 521 398 473 553 628 766 760 530 555 409 534
+##  [55] 750 217 675  68 614 623 733 709 740 210 260 727 389 160  62 687 569 338
+##  [73]  89 626 538 221 195 533 798 127 141 212 625 286  99 470 472 601 452 632
+##  [91] 115 241 128 130 763 508 214 539 475 775 107 237
+## 
+## $`7`
+##   [1] 386 795 807 785 466 567 620 419 319 448 571 392 658 516 512 514 254 125
+##  [19]  26 229 126 430 454 275 435 715 497 121 547  73  38 457 676 189 428 778
+##  [37] 764 169 142 523 424 573 745  85 461 123 545 663 701 478 277 432  53 330
+##  [55] 542  34  78  18  42 586 779  57  22 617 101 291 215  51 804 196  94 135
+##  [73] 655 429 695  65 124  93  64 469 668   6 157  55 561 549 741 178 117 678
+##  [91] 314 479  49 421 200 312 311 581 550 234 203 510 726 198 758 310 596 743
+## [109] 702 528 587 253 657 666 441 193
+## 
+## $`9`
+##  [1] 493 487 791 792 716 717 646 289 150 643 484 483 384 644 383 486 149 248 802
+## [20] 445 639 244 373 645  59 257 500 136 250 706 382 648 720 380 640 793 249 488
+## [39] 245 144 718 638 494 492 490 385 151 251 773 485 801 800 721 797 784 481 230
+## [58] 641 642 482 806 491 381 786 243 647 637 649 635 146 145 467 474 796
+## 
+## $`8`
+##   [1] 103 503 604 224 323 455  71 631 556 332 584   3 724 395 233 181 693  45
+##  [19] 462 471 609 738 606 780  80 770 219 139 368  82 279 114 788 671 468 730
+##  [37] 350 700 615 226 326 282 407 122   9 154 334  87  31 362 489 685 186 272
+##  [55]  97 765 593 576 358  36 337 164 284 346 182 416 442 691 413 344 774 707
+##  [73] 600 705 352 192 729 365 463 772 460 537 295 340 673 131 699 134 171 630
+##  [91] 317 357 531 184 364 579 518 199 683 618 423 591
+## 
+## $`4`
+##  [1] 106 335 777  20  77  15  24 505 148 351 803 262 444 400 402 660 313 496 308
+## [20] 417 288 211 207 264 162 301  61 662 190 119 723 634 247 259 499 206 735  67
+## [39] 749  47 388 603 168 375 737 783 159 651 302 303 696 140 391 267 654   5 156
+## [58] 667 336 414  70 502 256  58 201 331 359 354 566 611 408 629  30 536 672  33
+## [77] 327  17 507 559 674 627 759 425 294 274  83 636 404 347 619 739 520 624 732
+## [96] 552 529</code></pre>
+<pre class="r"><code># クラスター情報をベクトル化
+
+cluster &lt;- c(1:nrow(input))
+for(i in (names(o1))){
+  cluster[o1[[i]]] &lt;- i
+}
+
+# 各クラスターからランダムに10抽出
+
+set.seed(1)
+boxname &lt;- dat %&gt;% mutate(cluster = cluster) %&gt;% 
+  group_by(cluster) %&gt;% sample_n(size = 10) %&gt;% select(english,cluster)
+
+boxname &lt;- tapply(boxname$english,boxname$cluster,print)</code></pre>
+<pre><code>##  [1] &quot;Happiny&quot;    &quot;Poochyena&quot;  &quot;Caterpie&quot;   &quot;Swinub&quot;     &quot;Scatterbug&quot;
+##  [6] &quot;Lotad&quot;      &quot;Slowpoke&quot;   &quot;Axew&quot;       &quot;Spheal&quot;     &quot;Skitty&quot;    
+##  [1] &quot;Wigglytuff&quot; &quot;Blissey&quot;    &quot;Alomomola&quot;  &quot;Hariyama&quot;   &quot;Drifblim&quot;  
+##  [6] &quot;Chansey&quot;    &quot;Guzzlord&quot;   &quot;Munchlax&quot;   &quot;Wailord&quot;    &quot;Wobbuffet&quot; 
+##  [1] &quot;Fletchling&quot; &quot;Magby&quot;      &quot;Smeargle&quot;   &quot;Wimpod&quot;     &quot;Kirlia&quot;    
+##  [6] &quot;Zorua&quot;      &quot;Houndour&quot;   &quot;Joltik&quot;     &quot;Smoochum&quot;   &quot;Pansear&quot;   
+##  [1] &quot;Dewpider&quot;  &quot;Bronzor&quot;   &quot;Shieldon&quot;  &quot;Bayleef&quot;   &quot;Shroomish&quot; &quot;Sandygast&quot;
+##  [7] &quot;Mantyke&quot;   &quot;Clauncher&quot; &quot;Shellos&quot;   &quot;Amaura&quot;   
+##  [1] &quot;Dunsparce&quot;  &quot;Scraggy&quot;    &quot;Mawile&quot;     &quot;Grotle&quot;     &quot;Spinda&quot;    
+##  [6] &quot;Nidorina&quot;   &quot;Unown&quot;      &quot;Linoone&quot;    &quot;Farfetch&#39;d&quot; &quot;Beedrill&quot;  
+##  [1] &quot;Dusknoir&quot;   &quot;Aegislash&quot;  &quot;Araquanid&quot;  &quot;Uxie&quot;       &quot;Dusclops&quot;  
+##  [6] &quot;Onix&quot;       &quot;Carbink&quot;    &quot;Diancie&quot;    &quot;Regice&quot;     &quot;Turtonator&quot;
+##  [1] &quot;Avalugg&quot;    &quot;Klinklang&quot;  &quot;Bisharp&quot;    &quot;Doublade&quot;   &quot;Kangaskhan&quot;
+##  [6] &quot;Relicanth&quot;  &quot;Toucannon&quot;  &quot;Drapion&quot;    &quot;Golisopod&quot;  &quot;Scizor&quot;    
+##  [1] &quot;Comfey&quot;     &quot;Archeops&quot;   &quot;Dedenne&quot;    &quot;Typhlosion&quot; &quot;Kadabra&quot;   
+##  [6] &quot;Starmie&quot;    &quot;Delphox&quot;    &quot;Aerodactyl&quot; &quot;Lycanroc&quot;   &quot;Minun&quot;     
+##  [1] &quot;Masquerain&quot; &quot;Kecleon&quot;    &quot;Bellossom&quot;  &quot;Pelipper&quot;   &quot;Meganium&quot;  
+##  [6] &quot;Amoonguss&quot;  &quot;Dragalge&quot;   &quot;Florges&quot;    &quot;Sylveon&quot;    &quot;Glalie&quot;    
+##  [1] &quot;Kommo-o&quot;   &quot;Zygarde&quot;   &quot;Zekrom&quot;    &quot;Regigigas&quot; &quot;Raikou&quot;    &quot;Arcanine&quot; 
+##  [7] &quot;Hydreigon&quot; &quot;Yveltal&quot;   &quot;Garchomp&quot;  &quot;Ho-Oh&quot;</code></pre>
+<pre class="r"><code>head(boxname)</code></pre>
+<pre><code>## $`1`
+##  [1] &quot;Happiny&quot;    &quot;Poochyena&quot;  &quot;Caterpie&quot;   &quot;Swinub&quot;     &quot;Scatterbug&quot;
+##  [6] &quot;Lotad&quot;      &quot;Slowpoke&quot;   &quot;Axew&quot;       &quot;Spheal&quot;     &quot;Skitty&quot;    
+## 
+## $`10`
+##  [1] &quot;Wigglytuff&quot; &quot;Blissey&quot;    &quot;Alomomola&quot;  &quot;Hariyama&quot;   &quot;Drifblim&quot;  
+##  [6] &quot;Chansey&quot;    &quot;Guzzlord&quot;   &quot;Munchlax&quot;   &quot;Wailord&quot;    &quot;Wobbuffet&quot; 
+## 
+## $`2`
+##  [1] &quot;Fletchling&quot; &quot;Magby&quot;      &quot;Smeargle&quot;   &quot;Wimpod&quot;     &quot;Kirlia&quot;    
+##  [6] &quot;Zorua&quot;      &quot;Houndour&quot;   &quot;Joltik&quot;     &quot;Smoochum&quot;   &quot;Pansear&quot;   
+## 
+## $`3`
+##  [1] &quot;Dewpider&quot;  &quot;Bronzor&quot;   &quot;Shieldon&quot;  &quot;Bayleef&quot;   &quot;Shroomish&quot; &quot;Sandygast&quot;
+##  [7] &quot;Mantyke&quot;   &quot;Clauncher&quot; &quot;Shellos&quot;   &quot;Amaura&quot;   
+## 
+## $`4`
+##  [1] &quot;Dunsparce&quot;  &quot;Scraggy&quot;    &quot;Mawile&quot;     &quot;Grotle&quot;     &quot;Spinda&quot;    
+##  [6] &quot;Nidorina&quot;   &quot;Unown&quot;      &quot;Linoone&quot;    &quot;Farfetch&#39;d&quot; &quot;Beedrill&quot;  
+## 
+## $`5`
+##  [1] &quot;Dusknoir&quot;   &quot;Aegislash&quot;  &quot;Araquanid&quot;  &quot;Uxie&quot;       &quot;Dusclops&quot;  
+##  [6] &quot;Onix&quot;       &quot;Carbink&quot;    &quot;Diancie&quot;    &quot;Regice&quot;     &quot;Turtonator&quot;</code></pre>
+<pre class="r"><code>cols &lt;- brewer.pal(6, &quot;Set1&quot;)
+
+## top annotation
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c(&quot;HP&quot; = cols[1], &quot;Attack&quot; = cols[2], &quot;Defense&quot; = cols[3],
+                                               &quot;Sp. Attack&quot; = cols[4],&quot;Sp. Defense&quot; = cols[5], &quot;Speed&quot; = cols[6])))
+## left annotation
+la = rowAnnotation(group = anno_block(gp = gpar(fill = 2:11),
+        labels = c(&quot;Hard&quot;, &quot;Attack&quot;, &quot;Speed&quot;,&quot;Strong&quot;,&quot;mid2_specific&quot;,&quot;mid1&quot;,&quot;Weak3&quot;,&quot;Weak2&quot;,&quot;Weak1&quot;,&quot;HP&quot;), 
+        labels_gp = gpar(col = &quot;white&quot;, fontsize = 10)))
+
+
+Heatmap(input,
+        clustering_method_columns = &quot;ward.D2&quot;,
+        clustering_method_rows = &quot;ward.D2&quot;,
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name=&quot;Z-score&quot;,
+        row_order=o1 %&gt;% unlist %&gt;% as.vector,
+        cluster_rows = FALSE, row_split = factor(cluster,levels=names(o1)),
+        top_annotation = ha,
+        left_annotation =la,
+        right_annotation = rowAnnotation(textbox = anno_textbox(cluster, boxname)),
+        show_row_names = FALSE,
+        row_names_gp = gpar(fontsize = 4)
+        )</code></pre>
+<p><img src="ComplexHeatmap_files/figure-html/unnamed-chunk-15-1.png" width="960" /></p>
+<hr />
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

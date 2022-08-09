@@ -1,0 +1,288 @@
+---
+title: "ComplexHeatmap"
+output: html_document
+date: "2022-08-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,error=FALSE,warning = FALSE,message=FALSE)
+```
+
+ComplexHeatmapを使ってヒートマップをかく練習。
+
+- [ComplexHeatmap](https://jokergoo.github.io/ComplexHeatmap-reference/book/index.html)
+
+興味ある人はこっちをみた方がいい。
+
+使用したデータ
+
+- [fanzeyi/pokemon.json](https://github.com/fanzeyi/pokemon.json)
+
+の"pokedex.json"を使用
+
+注)あくまでもplotの練習、メモがわりです。
+
+# install
+
+```{r eval=FALSE}
+devtools::install_github("jokergoo/ComplexHeatmap")
+```
+
+
+
+# library
+
+```{r}
+library(ComplexHeatmap)
+library(dplyr)
+library(tidyr)
+library(circlize)
+library(viridis)
+library(RColorBrewer)
+library(jsonlite)
+```
+
+# データをみてみる
+
+```{r echo=FALSE}
+dat <- fromJSON("/Users/tirie/tirie_data/pokemon/pokemon.json-master/pokedex.json")
+```
+
+```{r eval=FALSE}
+# jsonliteのfromJSON関数で読み込み
+dat <- fromJSON("pokemon.json-master/pokedex.json")
+```
+
+
+```{r}
+## tidyrでデータフレーム化
+dat <- dat %>% 
+  unnest_wider(name) %>%
+  unnest_wider(type) %>%
+  unnest_wider(base) 
+
+head(dat)
+
+```
+
+hp, attack, defence, spAttack, spDefence, speedをheatmapで表示
+
+```{r}
+input <- dat[,-c(1:7)]
+
+# Z-scoreに変換
+
+input <- apply(input,2,scale)
+rownames(input) <- dat$english
+```
+
+# とりあえずプロット
+
+```{r fig.height=12,fig.width=5}
+
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        name="Z-score"
+        )
+```
+
+# 色を変える
+
+```{r fig.height=12,fig.width=5}
+# circlize packageを使用
+# とりあえずviridisのturboを使用
+
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),　##ここでcol指定
+        name="Z-score")
+```
+
+# top annotationをつける
+
+```{r fig.height=12,fig.width=6}
+
+cols <- brewer.pal(6, "Set1")
+
+# top annotationmのcode
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c("HP" = cols[1], "Attack" = cols[2], "Defense" = cols[3],
+                                               "Sp. Attack" = cols[4],"Sp. Defense" = cols[5], "Speed" = cols[6])))
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name="Z-score",
+        top_annotation = ha)
+```
+
+# k-means clustering
+
+```{r fig.height=12,fig.width=7}
+cols <- brewer.pal(6, "Set1")
+
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c("HP" = cols[1], "Attack" = cols[2], "Defense" = cols[3],
+                                               "Sp. Attack" = cols[4],"Sp. Defense" = cols[5], "Speed" = cols[6])))
+set.seed(1) ## 乱数指定 ※指定しないと毎回結果が変わる
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name="Z-score",
+        row_km = 10, ##ここでクラスターの数を指定
+        top_annotation = ha)
+```
+
+もうちょっと細かく分類できそう
+
+
+# left annotationを付加
+
+
+```{r fig.height=12,fig.width=7}
+
+cols <- brewer.pal(6, "Set1")
+
+## top annotation
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c("HP" = cols[1], "Attack" = cols[2], "Defense" = cols[3],
+                                               "Sp. Attack" = cols[4],"Sp. Defense" = cols[5], "Speed" = cols[6])))
+## left annotation
+la = rowAnnotation(group = anno_block(gp = gpar(fill = 2:11),
+        labels = c("Hard", "Attack", "Speed","Strong","mid2","mid1","Weak3","Weak2","Weak1","HP"), 
+        labels_gp = gpar(col = "white", fontsize = 10)))
+
+set.seed(1)
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name="Z-score",
+        row_km = 10,
+        top_annotation = ha,
+        left_annotation =la)
+```
+
+# 特定の名前だけを表示
+
+
+特定の遺伝子の名前だけを出す時に使える
+
+
+```{r fig.height=12,fig.width=7}
+#　名前のリスト
+name_lists <- c("Bulbasaur","Ivysaur","Venusaur",
+                "Charmander","Charmeleon","Charizard",
+                "Squirtle","Wartortle","Blastoise",
+                "Pikachu","Raichu",
+                "Eevee","Vaporeon","Jolteon","Flareon",
+                "Articuno","Zapdos","Moltres",
+                "Mewtwo","Mew")
+
+# indexの取得
+index <- match(name_lists,rownames(input))
+
+# row annotationのコード
+ra = rowAnnotation(species = anno_mark(at = index, 
+    labels = name_lists))
+
+# 以下同じ
+cols <- brewer.pal(6, "Set1")
+
+## top annotation
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c("HP" = cols[1], "Attack" = cols[2], "Defense" = cols[3],
+                                               "Sp. Attack" = cols[4],"Sp. Defense" = cols[5], "Speed" = cols[6])))
+## left annotation
+la = rowAnnotation(group = anno_block(gp = gpar(fill = 2:11),
+        labels = c("Hard", "Attack", "Speed","Strong","mid2_specific","mid1","Weak3","Weak2","Weak1","HP"), 
+        labels_gp = gpar(col = "white", fontsize = 10)))
+
+set.seed(1)
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name="Z-score",
+        row_km = 10,
+        top_annotation = ha,
+        left_annotation =la,
+        right_annotation = ra,
+        show_row_names = FALSE,
+        row_names_gp = gpar(fontsize = 4)
+        )
+
+```
+
+# text box annotationをつけてみる
+
+```{r}
+set.seed(1) ## 乱数指定 ※指定しないと毎回結果が変わる
+ht1 <- Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name="Z-score",
+        row_km = 10,
+        top_annotation = ha,
+        left_annotation =la,
+        right_annotation = ra,
+        show_row_names = FALSE,
+        row_names_gp = gpar(fontsize = 4)
+        )
+
+# order情報の取得
+o1 = row_order(ht1)
+head(o1)
+```
+```{r}
+# クラスター情報をベクトル化
+
+cluster <- c(1:nrow(input))
+for(i in (names(o1))){
+  cluster[o1[[i]]] <- i
+}
+
+# 各クラスターからランダムに10抽出
+
+set.seed(1)
+boxname <- dat %>% mutate(cluster = cluster) %>% 
+  group_by(cluster) %>% sample_n(size = 10) %>% select(english,cluster)
+
+boxname <- tapply(boxname$english,boxname$cluster,print)
+
+head(boxname)
+```
+```{r fig.height=12,fig.width=10}
+
+cols <- brewer.pal(6, "Set1")
+
+## top annotation
+ha = HeatmapAnnotation(category = colnames(input),
+                       col = list(category = c("HP" = cols[1], "Attack" = cols[2], "Defense" = cols[3],
+                                               "Sp. Attack" = cols[4],"Sp. Defense" = cols[5], "Speed" = cols[6])))
+## left annotation
+la = rowAnnotation(group = anno_block(gp = gpar(fill = 2:11),
+        labels = c("Hard", "Attack", "Speed","Strong","mid2_specific","mid1","Weak3","Weak2","Weak1","HP"), 
+        labels_gp = gpar(col = "white", fontsize = 10)))
+
+
+Heatmap(input,
+        clustering_method_columns = "ward.D2",
+        clustering_method_rows = "ward.D2",
+        col=colorRamp2(seq(-2,2,length=8), turbo(8)),
+        name="Z-score",
+        row_order=o1 %>% unlist %>% as.vector,
+        cluster_rows = FALSE, row_split = factor(cluster,levels=names(o1)),
+        top_annotation = ha,
+        left_annotation =la,
+        right_annotation = rowAnnotation(textbox = anno_textbox(cluster, boxname)),
+        show_row_names = FALSE,
+        row_names_gp = gpar(fontsize = 4)
+        )
+```
+
+---

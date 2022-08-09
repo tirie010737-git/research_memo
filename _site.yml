@@ -4,14 +4,21 @@ navbar:
   left:
     - text: "about"
       href: index.html
+    - text: "visualization"
+      menu:
+      - text: "ComplexHeatmap"
+        href: ComplexHeatmap.html
+    - text: "links"
+      href: links.html
 
 output:
   html_document:
-    theme: cosmo
+    theme:
+       version: 4
+       bootswatch: darkly
     highlight: textmate
     toc: true
     toc_float:
       collapse: false
     df_print: "kable"
-    css: site_style.css
 output_dir: "docs"
