@@ -3,11 +3,22 @@ title: "about"
 output: 
   html_document:
     toc: FALSE
-date: "2022-08-05"
+date: "`r format(Sys.time(), '%Y/%m/%d')`"
 ---
 
 研究用メモ置き場
 
 Rが中心
+
+# contents
+
+## Visualization
+
+- [ComplexHeatmap](ComplexHeatmap.html)
+
+## links
+
+- [よく使うリンク集](links.html)
+
 
 ---

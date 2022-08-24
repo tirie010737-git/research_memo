@@ -1,7 +1,7 @@
 ---
 title: "links"
 output: html_document
-date: "2022-08-05"
+date: "`r format(Sys.time(), '%Y/%m/%d')`"
 ---
 
 # 研究用リンク集
@@ -95,6 +95,7 @@ date: "2022-08-05"
 - [Cistrome](http://www.cistrome.org/)
 - [ChIP-Atlas](https://chip-atlas.org/)
 - [ROADMAP epigenomics PROJECT](http://www.roadmapepigenomics.org/)
+- [ROADMAP web protal](https://egg2.wustl.edu/roadmap/web_portal/index.html)
 - [ENCODE](https://www.encodeproject.org/)
 
 
